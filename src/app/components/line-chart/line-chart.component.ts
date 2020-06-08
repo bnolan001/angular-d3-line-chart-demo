@@ -36,7 +36,7 @@ export class LineChartComponent implements OnInit {
     this.activeField = 0;
   }
 
-  ngOnInit() {
+  ngOnInit(): void {
     console.log('LineChartComponent:ngOnInit');
     this.setup();
     this.updateGraphData();
@@ -55,7 +55,7 @@ export class LineChartComponent implements OnInit {
   /**
    * Configures the SVG element
    */
-  private buildSvg() {
+  private buildSvg(): void {
     console.log('LineChartComponent:buildSvg');
     this.host = d3.select(this.htmlElement);
     let svgElement: any = this.htmlElement.getElementsByClassName('svg-chart')[0];
@@ -77,6 +77,34 @@ export class LineChartComponent implements OnInit {
       .style("font-weight", "bold")
       .attr("alignment-baseline", "middle")
       .attr("text-anchor", "middle")
+  }
+
+  /**
+   * Execute the methods necessary to update the graph with 
+   * the data retrieved from the JSON file
+   * @param obsData
+   */
+  public updateGraphData(): void {
+    console.log('LineChartComponent:updateGraphData');
+    // Iterate to the next set of available data
+    this.activeField++;
+    if (this.activeField >= this.dataFields.length){
+      this.activeField = 0;
+    }
+
+    // Remove the current line form the chart
+    this.clearChartData();
+    
+    // Build the data array for chart where the values of 
+    // interest are put date and value fields
+    this.data = this.buildChartData();
+
+    // Configuring line path
+    this.configureXaxis();
+    this.configureYaxis();
+
+    // Create the line for the chart and add it 
+    this.drawLineAndPath();
   }
 
   /**
@@ -144,38 +172,12 @@ export class LineChartComponent implements OnInit {
   }
 
   /**
-   * Execute the methods necessary to update the graph with 
-   * the data retrieved from the JSON file
-   * @param obsData
-   */
-  public updateGraphData(): void {
-    console.log('LineChartComponent:updateGraphData');
-    // Iterate to the next set of available data
-    this.activeField++;
-    if (this.activeField >= this.dataFields.length){
-      this.activeField = 0;
-    }
-
-    // Remove the current line form the chart
-    this.clearChartData();
-    
-    // Build the data array for chart where the values of 
-    // interest are put date and value fields
-    this.data = this.buildChartData();
-
-    // Configuring line path
-    this.configureXaxis();
-    this.configureYaxis();
-
-    // Create the line for the chart and add it 
-    this.drawLineAndPath();
-  }
-
-  /**
    * Creates the chart data array by selecting the
    * appropriate data based on the user selection
+   * Returns an array of objects with a date and 
+   * value property
    */
-  private buildChartData(): any {
+  private buildChartData(): any[] {
     console.log('LineChartComponent:buildChartData');
     let data: any = [];
     if (this.chartData != null
