@@ -37,28 +37,19 @@ export class LineChartComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.host = d3.select(this.htmlElement);
-    let svgElement: any = this.htmlElement.getElementsByClassName('svg-chart')[0];
-    this.width = svgElement.clientWidth - this.margin.left - this.margin.right;
-    this.height = svgElement.clientHeight * 0.90 - this.margin.top - this.margin.bottom;
-
+    console.log('LineChartComponent:ngOnInit');
     this.setup();
-    this.refresh();
-  }
-
-  public refresh() {
     this.updateGraphData();
   }
 
+  /**
+   * Kick off all initialization processes
+   */
   private setup(): void {
     console.log('LineChartComponent:setup');
     this.chartData.data = weatherData.observations;
     this.chartData.locationName = weatherData.locationName.toLocaleUpperCase(); 
     this.buildSvg();
-    this.configureXaxis();
-    this.configureYaxis();
-    this.drawLineAndPath();
-
   }
 
   /**
@@ -66,6 +57,12 @@ export class LineChartComponent implements OnInit {
    */
   private buildSvg() {
     console.log('LineChartComponent:buildSvg');
+    this.host = d3.select(this.htmlElement);
+    let svgElement: any = this.htmlElement.getElementsByClassName('svg-chart')[0];
+    
+    // Do some automatic scaling for the chart
+    this.width = svgElement.clientWidth - this.margin.left - this.margin.right;
+    this.height = svgElement.clientHeight * 0.90 - this.margin.top - this.margin.bottom;
     this.svg = this.host.select('svg')
       .append('g')
       .attr('transform', 'translate(' + this.margin.left + ',' + this.margin.top + ')');
@@ -73,9 +70,9 @@ export class LineChartComponent implements OnInit {
     this.svg
       .append("text")
       .text(this.chartData.locationName) // set watermark
-      .attr("y", "50%")
-      .attr("x", "40%")
-      .style("fill", "#333333")
+      .attr("y", "50%") // set the location of the text with respect to the y-axis
+      .attr("x", "40%") // set the location of the text with respect to the x-axis
+      .style("fill", "#0000AA") // set the font color
       .style("font-size", "2.3em")
       .style("font-weight", "bold")
       .attr("alignment-baseline", "middle")
@@ -87,12 +84,13 @@ export class LineChartComponent implements OnInit {
    */
   private configureXaxis(): void {
     console.log('LineChartComponent:configureXaxis');
-    // range of data configuring
+    // range of data configuring, in this case we are
+    // showing data over a period of time
     this.x = d3Scale.scaleTime()
       .range([0, this.width])
       .domain(d3Array.extent(this.data, (d) => d.date));
 
-    // Configure the Y Axis
+    // Add the X-axis definition to the bottom of the chart
     this.svg.append('g')
       .attr('transform', 'translate(0,' + this.height + ')')
       .call(d3Axis.axisBottom(this.x));
@@ -105,6 +103,9 @@ export class LineChartComponent implements OnInit {
   private configureYaxis(): void {
     // range of data configuring
     let yRange: any[] = d3Array.extent(this.data, (d) => d.value);
+    // If we have data then make the Y range one less than the
+    // smallest value so we have space between the bottom-most part
+    // of the line and the X-axis
     if (yRange && yRange.length > 1
       && yRange[0] !== yRange[yRange.length - 1]) {
       yRange[0] -= 1;
@@ -113,7 +114,7 @@ export class LineChartComponent implements OnInit {
       .range([this.height, 0])
       .domain(yRange);
 
-    // Configure the Y Axis
+    // Add the Y-axis definition to the left part of the chart
     this.svg.append('g')
       .attr('class', 'axis axis--y')
       .call(d3Axis.axisLeft(this.y));
@@ -125,11 +126,13 @@ export class LineChartComponent implements OnInit {
    */
   private drawLineAndPath() {
     console.log('LineChartComponent:drawLineAndPath');
+    // Create a line based on the X and Y values (date and value)
+    // from the data
     this.line = d3Shape.line()
       .x((d: any) => this.x(d.date))
       .y((d: any) => this.y(d.value));
 
-    // Configuring line path
+    // Configure the line's look and data source
     this.svg.append('path')
       .datum(this.data)
       .attr("fill", "none")
@@ -141,26 +144,30 @@ export class LineChartComponent implements OnInit {
   }
 
   /**
-   * Execute the methods necessary to update the graph with the data retrieve
+   * Execute the methods necessary to update the graph with 
+   * the data retrieved from the JSON file
    * @param obsData
    */
   public updateGraphData(): void {
     console.log('LineChartComponent:updateGraphData');
+    // Iterate to the next set of available data
     this.activeField++;
     if (this.activeField >= this.dataFields.length){
       this.activeField = 0;
     }
+
     // Remove the current line form the chart
     this.clearChartData();
     
-    // Build the data array for chart
+    // Build the data array for chart where the values of 
+    // interest are put date and value fields
     this.data = this.buildChartData();
 
     // Configuring line path
     this.configureXaxis();
     this.configureYaxis();
 
-    // Build the line for the chart
+    // Create the line for the chart and add it 
     this.drawLineAndPath();
   }
 
@@ -175,6 +182,7 @@ export class LineChartComponent implements OnInit {
       && this.chartData.data != null) {
       let value: any = null;
 
+      // Extract the desired data from the JSON object
       this.chartData.data.forEach((d) => {
         if (this.activeField === 0){
           value = d.temperature;
@@ -200,7 +208,8 @@ export class LineChartComponent implements OnInit {
   }
 
   /**
-   * Removes all lines and axis from the chart
+   * Removes all lines and axis from the chart so we can
+   * create new ones based on the data
    */
   private clearChartData(): void {
     console.log('LineChartComponent:clearChartData');
