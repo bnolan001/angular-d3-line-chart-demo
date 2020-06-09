@@ -125,53 +125,7 @@ export class LineChartComponent implements OnInit {
 
   }
 
-  /**
-   * Configures the Y-axis based on the data values
-   */
-  private configureYaxis(): void {
-    // range of data configuring
-    let yRange: any[] = d3Array.extent(this.data, (d) => d.value);
-    // If we have data then make the Y range one less than the
-    // smallest value so we have space between the bottom-most part
-    // of the line and the X-axis
-    if (yRange && yRange.length > 1
-      && yRange[0] !== yRange[yRange.length - 1]) {
-      yRange[0] -= 1;
-    }
-    this.y = d3Scale.scaleLinear()
-      .range([this.height, 0])
-      .domain(yRange);
-
-    // Add the Y-axis definition to the left part of the chart
-    this.svg.append('g')
-      .attr('class', 'axis axis--y')
-      .call(d3Axis.axisLeft(this.y));
-
-  }
-
-  /**
-   * Configures and draws the line on the graph
-   */
-  private drawLineAndPath() {
-    console.log('LineChartComponent:drawLineAndPath');
-    // Create a line based on the X and Y values (date and value)
-    // from the data
-    this.line = d3Shape.line()
-      .x((d: any) => this.x(d.date))
-      .y((d: any) => this.y(d.value));
-
-    // Configure the line's look and data source
-    this.svg.append('path')
-      .datum(this.data)
-      .attr("fill", "none")
-      .attr("stroke", "steelblue")
-      .attr("stroke-width", 1.5)
-      .attr("stroke-linejoin", "round")
-      .attr("stroke-linecap", "round")
-      .attr("d", this.line);
-  }
-
-  /**
+/**
    * Creates the chart data array by selecting the
    * appropriate data based on the user selection
    * Returns an array of objects with a date and 
@@ -221,4 +175,50 @@ export class LineChartComponent implements OnInit {
       this.svg.selectAll('path').remove();
     }
   }
+  /**
+   * Configures the Y-axis based on the data values
+   */
+  private configureYaxis(): void {
+    // range of data configuring
+    let yRange: any[] = d3Array.extent(this.data, (d) => d.value);
+    // If we have data then make the Y range one less than the
+    // smallest value so we have space between the bottom-most part
+    // of the line and the X-axis
+    if (yRange && yRange.length > 1
+      && yRange[0] !== yRange[yRange.length - 1]) {
+      yRange[0] -= 1;
+    }
+    this.y = d3Scale.scaleLinear()
+      .range([this.height, 0])
+      .domain(yRange);
+
+    // Add the Y-axis definition to the left part of the chart
+    this.svg.append('g')
+      .attr('class', 'axis axis--y')
+      .call(d3Axis.axisLeft(this.y));
+
+  }
+
+  /**
+   * Configures and draws the line on the graph
+   */
+  private drawLineAndPath() {
+    console.log('LineChartComponent:drawLineAndPath');
+    // Create a line based on the X and Y values (date and value)
+    // from the data
+    this.line = d3Shape.line()
+      .x((d: any) => this.x(d.date))
+      .y((d: any) => this.y(d.value));
+
+    // Configure the line's look and data source
+    this.svg.append('path')
+      .datum(this.data)
+      .attr("fill", "none")
+      .attr("stroke", "steelblue")
+      .attr("stroke-width", 1.5)
+      .attr("stroke-linejoin", "round")
+      .attr("stroke-linecap", "round")
+      .attr("d", this.line);
+  }
+
 }
