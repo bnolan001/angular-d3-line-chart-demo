@@ -108,23 +108,18 @@ export class LineChartComponent implements OnInit {
   }
 
   /**
-   * Configures the X-axis based on the time series
+   * Removes all lines and axis from the chart so we can
+   * create new ones based on the data
    */
-  private configureXaxis(): void {
-    console.log('LineChartComponent:configureXaxis');
-    // range of data configuring, in this case we are
-    // showing data over a period of time
-    this.x = d3Scale.scaleTime()
-      .range([0, this.width])
-      .domain(d3Array.extent(this.data, (d) => d.date));
-
-    // Add the X-axis definition to the bottom of the chart
-    this.svg.append('g')
-      .attr('transform', 'translate(0,' + this.height + ')')
-      .call(d3Axis.axisBottom(this.x));
-
+  private clearChartData(): void {
+    console.log('LineChartComponent:clearChartData');
+    if (this.chartData !== null
+      && this.chartData.data.length > 0) {
+      this.svg.selectAll('g').remove();
+      this.svg.selectAll('path').remove();
+    }
   }
-
+  
 /**
    * Creates the chart data array by selecting the
    * appropriate data based on the user selection
@@ -162,19 +157,7 @@ export class LineChartComponent implements OnInit {
 
     return data;
   }
-
-  /**
-   * Removes all lines and axis from the chart so we can
-   * create new ones based on the data
-   */
-  private clearChartData(): void {
-    console.log('LineChartComponent:clearChartData');
-    if (this.chartData !== null
-      && this.chartData.data.length > 0) {
-      this.svg.selectAll('g').remove();
-      this.svg.selectAll('path').remove();
-    }
-  }
+  
   /**
    * Configures the Y-axis based on the data values
    */
@@ -196,6 +179,24 @@ export class LineChartComponent implements OnInit {
     this.svg.append('g')
       .attr('class', 'axis axis--y')
       .call(d3Axis.axisLeft(this.y));
+
+  }
+
+  /**
+   * Configures the X-axis based on the time series
+   */
+  private configureXaxis(): void {
+    console.log('LineChartComponent:configureXaxis');
+    // range of data configuring, in this case we are
+    // showing data over a period of time
+    this.x = d3Scale.scaleTime()
+      .range([0, this.width])
+      .domain(d3Array.extent(this.data, (d) => d.date));
+
+    // Add the X-axis definition to the bottom of the chart
+    this.svg.append('g')
+      .attr('transform', 'translate(0,' + this.height + ')')
+      .call(d3Axis.axisBottom(this.x));
 
   }
 
